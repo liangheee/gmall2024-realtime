@@ -15,9 +15,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * 操作HBase的工具类
  * @author liangheee
  * * @date 2024/10/28
- * 操作HBase的工具类
  */
 @Slf4j
 public class HBaseUtil {

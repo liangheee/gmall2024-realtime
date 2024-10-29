@@ -16,9 +16,9 @@ import java.util.Arrays;
 import java.util.Properties;
 
 /**
+ * Flink Source创建工具类
  * @author liangheee
  * * @date 2024/10/29
- * Flink Source创建工具类
  */
 @Slf4j
 public class FlinkSourceUtil {
