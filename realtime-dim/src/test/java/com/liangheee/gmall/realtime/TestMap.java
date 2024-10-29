@@ -35,5 +35,10 @@ public class TestMap {
         for(Map.Entry<String,Object> entry : entries){
             System.out.println(entry.getKey() + "====" + entry.getValue());
         }
+        test("1","2","3");
+    }
+
+    public static void test(String...args){
+        System.out.println(args);
     }
 }

@@ -4,7 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.liangheee.gmall.realtime.common.bean.TableProcessDim;
 import com.liangheee.gmall.realtime.common.constant.Constant;
+import com.liangheee.gmall.realtime.common.utils.FlinkSourceUtil;
 import com.liangheee.gmall.realtime.common.utils.HBaseUtil;
+import com.mysql.cj.jdbc.Driver;
 import com.ververica.cdc.connectors.mysql.source.MySqlSource;
 import com.ververica.cdc.connectors.mysql.table.StartupOptions;
 import com.ververica.cdc.debezium.JsonDebeziumDeserializationSchema;
@@ -13,7 +15,6 @@ import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
-import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.state.BroadcastState;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
@@ -33,10 +34,16 @@ import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
+import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
+import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.util.Collector;
 import org.apache.hadoop.hbase.client.Connection;
 
 import java.io.IOException;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.util.*;
 
 /**
@@ -66,38 +73,7 @@ public class DimApp {
         // 4.读取业务数据
         // TODO 隐藏细节：maxwell得config.properties中已经配置了业务数据得分区器分区规则，按照数据的主键计算分区
         String groupId = "topic_db_group";
-        // KafkaSource底层创建KafkaSourceReader
-        // KafkaSourceReader中保存了一个 this.offsetsToCommit = Collections.synchronizedSortedMap(new TreeMap<>());从而来保存待提交的offset，将自动提交offset改为手动提交
-        KafkaSource<String> kafkaSource = KafkaSource.<String>builder()
-                .setBootstrapServers(Constant.BROKER_SERVERS)
-                .setGroupId(groupId)
-                .setTopics(Constant.TOPIC_DB)
-//                .setStartingOffsets(OffsetsInitializer.committedOffsets(OffsetResetStrategy.EARLIEST))
-                .setStartingOffsets(OffsetsInitializer.latest())
-                // SimpleStringSchema底层在对序列化数据byte[]时，底层直接采用的new String()，构造器第一个参数byte[]，加了注解@NotNull
-                // 也就是说如果反序列化时，传入的byte数组为null，那么就会报错
-                // 因此为了容错性，我们需要自定义反序列化器
-//                .setValueOnlyDeserializer(new SimpleStringSchema())
-                .setValueOnlyDeserializer(new DeserializationSchema<String>() {
-                    @Override
-                    public String deserialize(byte[] message) throws IOException {
-                        if(message != null){
-                            return new String(message);
-                        }
-                        return null;
-                    }
-
-                    @Override
-                    public boolean isEndOfStream(String nextElement) {
-                        return false;
-                    }
-
-                    @Override
-                    public TypeInformation<String> getProducedType() {
-                        return Types.STRING;
-                    }
-                })
-                .build();
+        KafkaSource<String> kafkaSource = FlinkSourceUtil.getKafkaSource(Constant.BROKER_SERVERS, groupId, Constant.TOPIC_DB);
 
         DataStreamSource<String> topicDbDS = env.fromSource(kafkaSource, WatermarkStrategy.noWatermarks(), "topic_db_kafka_source");
 
@@ -127,20 +103,14 @@ public class DimApp {
 
 
         // 6.FlinkCDC读取DIM配置数据
-        Properties jdbcProperties = new Properties();
-        jdbcProperties.setProperty("useSSL", "false");
-        jdbcProperties.setProperty("allowPublicKeyRetrieval", "true");
-        MySqlSource<String> dimConfigMysqlSource = MySqlSource.<String>builder()
-                .hostname(Constant.MYSQL_HOST)
-                .port(Constant.MYSQL_PORT)
-                .databaseList("gmall2024_config")
-                .tableList("gmall2024_config.table_process_dim")
-                .username(Constant.MYSQL_USERNAME)
-                .password(Constant.MYSQL_PASSWD)
-                .deserializer(new JsonDebeziumDeserializationSchema())
-                .startupOptions(StartupOptions.initial())
-                .jdbcProperties(jdbcProperties)
-                .build();
+        MySqlSource<String> dimConfigMysqlSource = FlinkSourceUtil.getMysqlSource(
+                Constant.MYSQL_HOST,
+                Constant.MYSQL_PORT,
+                Constant.MYSQL_USERNAME,
+                Constant.MYSQL_PASSWD,
+                "gmall2024_config",
+                "gmall2024_config.table_process_dim");
+
 
         DataStreamSource<String> dimConfigDS = env.fromSource(dimConfigMysqlSource, WatermarkStrategy.noWatermarks(), "dim_config_source")
                 .setParallelism(1);
@@ -153,7 +123,7 @@ public class DimApp {
         // 7.转换读取的DIM配置流的数据格式为专用对象,并根据配置流中的op字段判断新增或者删除HBase数据
         SingleOutputStreamOperator<TableProcessDim> tableProcessDimDS = dimConfigDS.map(
                 new RichMapFunction<String, TableProcessDim>() {
-                    Connection conn = null;
+                    private Connection conn = null;
                     @Override
                     public void open(Configuration parameters) throws Exception {
                         conn = HBaseUtil.getHBaseConnection();
@@ -206,13 +176,34 @@ public class DimApp {
         BroadcastConnectedStream<JSONObject, TableProcessDim> connectedStream = topicDbJsonObjDS.connect(dimConfigBS);
         SingleOutputStreamOperator<Tuple2<JSONObject, TableProcessDim>> dimBizDS = connectedStream.process(new BroadcastProcessFunction<JSONObject, TableProcessDim, Tuple2<JSONObject, TableProcessDim>>() {
 
-            HashMap<String,TableProcessDim> map;
+            private HashMap<String,TableProcessDim> broadcastStateCache = new HashMap<>();
 
             @Override
             public void open(Configuration parameters) throws Exception {
-                map = new HashMap<>();
                 // 通过jdbc读取mysql维度配置表信息
-
+                // 注册驱动
+                Class.forName(Driver.class.getName());
+                // 建立连接
+                java.sql.Connection conn = DriverManager.getConnection(Constant.MYSQL_URL, Constant.MYSQL_USERNAME, Constant.MYSQL_PASSWD);
+                // 获取数据库操作对象
+                String sql = "select * from gmall2024_config.table_process_dim";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery();
+                ResultSetMetaData metaData = rs.getMetaData();
+                while(rs.next()){
+                    JSONObject jsonObj = new JSONObject();
+                    for(int i = 1;i <= metaData.getColumnCount();i++){
+                        String columnName = metaData.getColumnName(i);
+                        Object columnValue = rs.getObject(i);
+                        jsonObj.put(columnName,columnValue);
+                    }
+                    String sourceTable = jsonObj.getString("source_table");
+                    TableProcessDim tableProcessDim = jsonObj.toJavaObject(TableProcessDim.class);
+                    broadcastStateCache.put(sourceTable,tableProcessDim);
+                }
+                rs.close();
+                ps.close();
+                conn.close();
             }
 
             @Override
@@ -228,8 +219,8 @@ public class DimApp {
                     deleteNotNeedColumns(dataJsonObj,tableProcessDim);
 
                     // 业务数据添加操作类型op
-                    String op = jsonObj.getString("type");
-                    dataJsonObj.put("op",op);
+                    String type = jsonObj.getString("type");
+                    dataJsonObj.put("type",type);
 
                     collector.collect(Tuple2.of(dataJsonObj,tableProcessDim));
                 }
@@ -249,7 +240,43 @@ public class DimApp {
             }
         });
 
-        dimBizDS.print();
+        // ({"spu_name":"小米12sultra1111","tm_id":1,"description":"小米10","id":1,"type":"update","category3_id":61},TableProcessDim(sourceTable=spu_info, sinkTable=dim_spu_info, sinkColumns=id,spu_name,description,category3_id,tm_id, sinkFamily=info, sinkRowKey=id, op=r))
+//        dimBizDS.print();
+
+        dimBizDS.addSink(new RichSinkFunction<Tuple2<JSONObject, TableProcessDim>>() {
+
+            private Connection conn = null;
+
+            @Override
+            public void open(Configuration parameters) throws Exception {
+                conn = HBaseUtil.getHBaseConnection();
+            }
+
+            @Override
+            public void close() throws Exception {
+                HBaseUtil.closeHBaseConnection(conn);
+            }
+
+            @Override
+            public void invoke(Tuple2<JSONObject, TableProcessDim> value, Context context) throws Exception {
+                JSONObject jsonObj = value.f0;
+                TableProcessDim tableProcessDim = value.f1;
+
+                String type = jsonObj.getString("type");
+                jsonObj.remove("type");
+                String sinkTable = tableProcessDim.getSinkTable();
+                String sinkRowKeyColumn = tableProcessDim.getSinkRowKey();
+                String rowKey = jsonObj.getString(sinkRowKeyColumn);
+                if("delete".equals(type)){
+                    // 如果是delete，对HBase数据行进行删除操作
+                    HBaseUtil.deleteRow(conn,Constant.HBASE_NAMESPACE,sinkTable,rowKey);
+                }else{
+                    // 如果是insert、update、bootstrap-insert，对HBase进行put操作
+                    String sinkFamily = tableProcessDim.getSinkFamily();
+                    HBaseUtil.putRow(conn,Constant.HBASE_NAMESPACE,sinkTable,sinkFamily,rowKey,jsonObj);
+                }
+            }
+        });
 
         env.execute();
     }
