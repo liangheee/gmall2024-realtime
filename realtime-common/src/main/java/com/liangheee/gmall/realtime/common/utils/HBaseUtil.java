@@ -55,7 +55,7 @@ public class HBaseUtil {
      * @param columnFamilies HBase列族
      */
     public static void createHBaseTable(Connection conn,String namespace,String table,String... columnFamilies){
-        if(StringUtils.isEmpty(namespace) || StringUtils.isEmpty(table) || columnFamilies == null || columnFamilies.length < 1){
+        if(StringUtils.isEmpty(namespace) || StringUtils.isEmpty(table) || StringUtils.isAllEmpty(columnFamilies)){
             log.error("创建HBase表时，namespace：{},table：{}、columFamilies：{} 不能为空",namespace,table,Arrays.toString(columnFamilies));
             return;
         }

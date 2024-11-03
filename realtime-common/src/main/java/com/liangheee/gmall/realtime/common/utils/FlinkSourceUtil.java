@@ -30,7 +30,7 @@ public class FlinkSourceUtil {
      * @return KafkaSource
      */
     public static KafkaSource<String> getKafkaSource(String brokerServers,String groupId,String... topics){
-        if(StringUtils.isEmpty(brokerServers) || StringUtils.isEmpty(groupId) || topics.length < 1){
+        if(StringUtils.isEmpty(brokerServers) || StringUtils.isEmpty(groupId) || StringUtils.isAllEmpty(topics)){
             log.error("获取KafkaSource时，brokerServers：{}，groupId：{}，topics：{} 不能为空",brokerServers,groupId, Arrays.toString(topics));
             throw new RuntimeException("获取KafkaSource失败");
         }
