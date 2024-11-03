@@ -27,19 +27,13 @@ import org.apache.flink.util.OutputTag;
 @Slf4j
 public class DwdBaseLogApp extends BaseApp {
 
-    private final String START = "start";
-    private final String PAGE = "page";
-    private final String DISPLAY = "display";
-    private final String ACTION = "action";
-    private final String ERR = "err";
-    private final String EXCEPTION = "exception";
-
     public static void main(String[] args) throws Exception {
         new DwdBaseLogApp().start("10011",4,"dwd_base_log", Constant.BROKER_SERVERS,Constant.TOPIC_LOG);
     }
     @Override
     public void handle(StreamExecutionEnvironment env, DataStreamSource<String> kafkaStrDS) {
         // 转换数据类型为通用数据类型，并做简单的ETL，将异常格式的日志数据写入异常格式Kafka主题
+        String EXCEPTION = "exception";
         OutputTag<String> exceptionTag = new OutputTag<>(EXCEPTION, Types.STRING);
         SingleOutputStreamOperator<JSONObject> logDS = kafkaStrDS.process(
                 new ProcessFunction<String, JSONObject>() {
@@ -69,10 +63,10 @@ public class DwdBaseLogApp extends BaseApp {
 //        fixedNewOrOldAccessFlagDS.print();
 
         // 将不同类型日志分流
-        OutputTag<String> startOutputTag = new OutputTag<>(START, Types.STRING);
-        OutputTag<String> dispalyOutputTag = new OutputTag<>(DISPLAY, Types.STRING);
-        OutputTag<String> actionOutputTag = new OutputTag<>(ACTION, Types.STRING);
-        OutputTag<String> errOutputTag = new OutputTag<>(ERR, Types.STRING);
+        OutputTag<String> startOutputTag = new OutputTag<>("start", Types.STRING);
+        OutputTag<String> dispalyOutputTag = new OutputTag<>("display", Types.STRING);
+        OutputTag<String> actionOutputTag = new OutputTag<>("action", Types.STRING);
+        OutputTag<String> errOutputTag = new OutputTag<>("err", Types.STRING);
 
         SingleOutputStreamOperator<String> pageDS = fixedNewOrOldAccessFlagDS.process(new SplitProcessFunction(startOutputTag,dispalyOutputTag,actionOutputTag,errOutputTag));
 
