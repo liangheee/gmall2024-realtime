@@ -1,4 +1,4 @@
-package com.liangheee.gmall.realtime.dwd.db.db;
+package com.liangheee.gmall.realtime.dwd.db.app;
 
 import com.liangheee.gmall.realtime.common.constant.Constant;
 import com.liangheee.gmall.realtime.common.utils.SQLUtil;
