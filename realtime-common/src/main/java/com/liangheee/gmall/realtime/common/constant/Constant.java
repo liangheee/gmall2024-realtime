@@ -14,7 +14,9 @@ public class Constant {
     public static final String TOPIC_DWD_TRAFFIC_DISPLAY = "dwd_traffic_display";
     public static final String TOPIC_DWD_TRAFFIC_ACTION = "dwd_traffic_action";
     public static final String TOPIC_DWD_TRAFFIC_ERR = "dwd_traffic_err";
+    public static final String TOPIC_DWD_INTERACTION_COMMENT_INFO = "dwd_interaction_comment_info";
     public static final String BROKER_SERVERS = "hadoop102:9092,hadoop103:9092,hadoop104:9092";
+    public static final String ZOOKEEPER_QUORUM = "hadoop102,hadoop103,hadoop104:2181";
     public static final String MYSQL_HOST = "hadoop102";
     public static final int MYSQL_PORT = 3306;
     public static final String MYSQL_USER = "root";
