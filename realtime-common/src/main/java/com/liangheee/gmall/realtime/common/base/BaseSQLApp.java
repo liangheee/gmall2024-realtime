@@ -2,6 +2,8 @@ package com.liangheee.gmall.realtime.common.base;
 
 import com.liangheee.gmall.realtime.common.constant.Constant;
 import com.liangheee.gmall.realtime.common.utils.SQLUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.common.time.Time;
 import org.apache.flink.runtime.state.hashmap.HashMapStateBackend;
@@ -10,12 +12,25 @@ import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
+import java.util.Arrays;
+
 /**
  * @author liangheee
  * * @date 2024/11/15
  */
+@Slf4j
 public abstract class BaseSQLApp {
-    public void start(String ck){
+    public void start(String port,String ck){
+        if(Integer.parseInt(port) < 0 || Integer.parseInt(port) > 65535){
+            log.error("创建Flink启动环境时，Flink WebUI的端口号：{}，超出合理范围0~65535",port);
+            throw new RuntimeException("创建Flink环境失败");
+        }
+
+        if(StringUtils.isEmpty(ck)){
+            log.error("创建Flink启动环境时，ck：{}为空",ck);
+            throw new RuntimeException("创建Flink环境失败");
+        }
+
         // 创建流执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         // 设置并行度
@@ -45,7 +60,10 @@ public abstract class BaseSQLApp {
                 "  `type` STRING,\n" +
                 "  `ts` BIGINT,\n" +
                 "  `data` map<STRING,STRING>,\n" +
-                "  `pt` AS PROCTIME()\n" +
+                "  `old` map<STRING,STRING>,\n" +
+                "  `pt` AS PROCTIME(),\n" +
+                "   et AS to_timestamp_ltz(ts, 0),\n" +
+                "  WATERMARK FOR et AS et - INTERVAL '3' SECOND\n" +
                 ")" + SQLUtil.getKafkaSourceConnectorParams(Constant.TOPIC_DB,Constant.BROKER_SERVERS,groupId));
     }
 

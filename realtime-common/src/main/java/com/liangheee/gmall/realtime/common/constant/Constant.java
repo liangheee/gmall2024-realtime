@@ -15,6 +15,12 @@ public class Constant {
     public static final String TOPIC_DWD_TRAFFIC_ACTION = "dwd_traffic_action";
     public static final String TOPIC_DWD_TRAFFIC_ERR = "dwd_traffic_err";
     public static final String TOPIC_DWD_INTERACTION_COMMENT_INFO = "dwd_interaction_comment_info";
+    public static final String TOPIC_DWD_TRADE_CART_ADD = "dwd_trade_cart_add";
+    public static final String TOPIC_DWD_TRADE_ORDER_DETAIL = "dwd_trade_order_detail";
+    public static final String TOPIC_DWD_TRADE_ORDER_CANCEL = "dwd_trade_order_cancel";
+    public static final String TOPIC_DWD_TRADE_ORDER_PAY_SUC_DETAIL = "dwd_trade_order_pay_suc_detail";
+    public static final String TOPIC_DWD_TRADE_ORDER_REFUND = "dwd_trade_order_refund";
+    public static final String TOPIC_DWD_TRADE_REFUND_PAY_SUC_DETAIL = "dwd_trade_refund_pay_suc_detail";
     public static final String BROKER_SERVERS = "hadoop102:9092,hadoop103:9092,hadoop104:9092";
     public static final String ZOOKEEPER_QUORUM = "hadoop102,hadoop103,hadoop104:2181";
     public static final String MYSQL_HOST = "hadoop102";
