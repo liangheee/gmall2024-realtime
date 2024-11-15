@@ -1,13 +1,8 @@
 package com.liangheee.gmall.realtime.dwd.db.app;
 
+import com.liangheee.gmall.realtime.common.base.BaseSQLApp;
 import com.liangheee.gmall.realtime.common.constant.Constant;
 import com.liangheee.gmall.realtime.common.utils.SQLUtil;
-import org.apache.flink.api.common.restartstrategy.RestartStrategies;
-import org.apache.flink.api.common.time.Time;
-import org.apache.flink.runtime.state.hashmap.HashMapStateBackend;
-import org.apache.flink.streaming.api.CheckpointingMode;
-import org.apache.flink.streaming.api.environment.CheckpointConfig;
-import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
@@ -15,34 +10,15 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
  * @author liangheee
  * * @date 2024/11/10
  */
-public class DWDInteractionCommentInfoApp {
+public class DwdInteractionCommentInfoApp extends BaseSQLApp {
     public static void main(String[] args) {
-        // 创建流执行环境
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        // 设置并行度
-        env.setParallelism(4);
-        // 创建表执行环境
-        StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
+        new DwdInteractionCommentInfoApp().start(Constant.TOPIC_DWD_INTERACTION_COMMENT_INFO);
+    }
 
-        // 检查点相关配置
-        env.enableCheckpointing(5000L, CheckpointingMode.EXACTLY_ONCE);
-        env.getCheckpointConfig().setCheckpointTimeout(60000L);
-        env.getCheckpointConfig().setExternalizedCheckpointCleanup(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
-        env.getCheckpointConfig().setMinPauseBetweenCheckpoints(2000L);
-        env.setRestartStrategy(RestartStrategies.failureRateRestart(3, Time.days(30),Time.seconds(3)));
-        env.getCheckpointConfig().setCheckpointStorage("hdfs://mycluster:8020/gmall2024-realtime/ck/" + Constant.TOPIC_DWD_INTERACTION_COMMENT_INFO);
-        env.setStateBackend(new HashMapStateBackend());
-        System.setProperty("HADOOP_USER_NAME","liangheee");
-
+    @Override
+    protected void handle(StreamTableEnvironment tableEnv) {
         // 创建动态表，从topic_db主题读取ODS数据
-        tableEnv.executeSql("CREATE TABLE topic_db (\n" +
-                "  `database` STRING,\n" +
-                "  `table` STRING,\n" +
-                "  `type` STRING,\n" +
-                "  `ts` BIGINT,\n" +
-                "  `data` map<STRING,STRING>,\n" +
-                "  `proc_time` AS PROCTIME()\n" +
-                ")" + SQLUtil.getKafkaSourceConnectorParams(Constant.TOPIC_DB,Constant.BROKER_SERVERS,Constant.TOPIC_DB));
+        readTopicDb(tableEnv,Constant.TOPIC_DWD_INTERACTION_COMMENT_INFO);
         // Table topicDb = tableEnv.sqlQuery("select * from topic_db");
         // topicDb.execute().print();
 
@@ -54,7 +30,7 @@ public class DWDInteractionCommentInfoApp {
                 "  `data`['appraise'] AS appraise,\n" +
                 "  `data`['comment_txt'] AS comment_txt,\n" +
                 "  `ts`,\n" +
-                "  `proc_time`\n" +
+                "  `pt`\n" +
                 "from topic_db \n" +
                 "where `database` = 'gmall2024' \n" +
                 "and `table` = 'comment_info' \n" +
@@ -64,11 +40,7 @@ public class DWDInteractionCommentInfoApp {
         tableEnv.createTemporaryView("comment_info",commentInfoTable);
 
         // 创建动态表，从hbase读取base_dic字典表数据
-        tableEnv.executeSql("CREATE TABLE dim_base_dic (\n" +
-                " dic_code STRING,\n" +
-                " info ROW<dic_name STRING>,\n" +
-                " PRIMARY KEY (dic_code) NOT ENFORCED\n" +
-                ")" + SQLUtil.getHBaseSourceConnectorParams(Constant.HBASE_NAMESPACE,"dim_base_dic",Constant.ZOOKEEPER_QUORUM));
+        readDimBaseDic(tableEnv);
 
 //        tableEnv.executeSql("select dic_code,info.dic_name from dim_base_dic").print();
 
@@ -83,7 +55,7 @@ public class DWDInteractionCommentInfoApp {
                 "  `comment_txt`,\n" +
                 "  `ts`" +
                 "FROM comment_info AS c\n" +
-                "  JOIN dim_base_dic FOR SYSTEM_TIME AS OF c.proc_time AS d\n" +
+                "  JOIN dim_base_dic FOR SYSTEM_TIME AS OF c.pt AS d\n" +
                 "    ON c.`appraise` = d.`dic_code`;");
 //         joinedTable.execute().print();
 //         创建upsert-kafka动态表，将关联后的结果写入kafka主题中
