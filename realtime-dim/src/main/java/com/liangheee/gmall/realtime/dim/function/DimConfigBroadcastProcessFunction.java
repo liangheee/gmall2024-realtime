@@ -3,7 +3,7 @@ package com.liangheee.gmall.realtime.dim.function;
 import com.alibaba.fastjson.JSONObject;
 import com.liangheee.gmall.realtime.common.bean.TableProcessDim;
 import com.liangheee.gmall.realtime.common.constant.Constant;
-import com.liangheee.gmall.realtime.common.utils.ColumnUtil;
+import com.liangheee.gmall.realtime.common.utils.JsonUtil;
 import com.liangheee.gmall.realtime.common.utils.JdbcUtil;
 import com.mysql.cj.jdbc.Driver;
 import org.apache.flink.api.common.state.BroadcastState;
@@ -54,7 +54,7 @@ public class DimConfigBroadcastProcessFunction extends BroadcastProcessFunction<
             // 当前是维度数据，进行简单ETL，往下游传递
             JSONObject dataJsonObj = jsonObj.getJSONObject("data");
             // 根据HBase配置表中的sink_columns字段删除data中不需要的数据
-            ColumnUtil.deleteNotNeedColumns(dataJsonObj,tableProcessDim.getSinkColumns());
+            JsonUtil.deleteNotNeedColumns(dataJsonObj,tableProcessDim.getSinkColumns());
 
             // 业务数据添加操作类型op
             String type = jsonObj.getString("type");
