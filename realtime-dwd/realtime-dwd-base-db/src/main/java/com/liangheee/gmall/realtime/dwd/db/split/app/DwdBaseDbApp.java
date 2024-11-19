@@ -62,7 +62,6 @@ public class DwdBaseDbApp extends BaseApp {
 
     private static SingleOutputStreamOperator<JSONObject> odsEtl(DataStreamSource<String> kafkaStrDS) {
         SingleOutputStreamOperator<JSONObject> topicDbDS = kafkaStrDS.process(new ProcessFunction<String, JSONObject>() {
-            private final List<String> tables = Arrays.asList("coupon_use","favor_info","user_info");
 
             @Override
             public void processElement(String jsonStr, ProcessFunction<String, JSONObject>.Context context, Collector<JSONObject> collector) {
@@ -71,11 +70,7 @@ public class DwdBaseDbApp extends BaseApp {
                 if(StringUtils.isEmpty(type) || type.contains("bootstrap-")){
                     return;
                 }
-
-                String table = jsonObj.getString("table");
-                if(tables.contains(table)){
-                    collector.collect(jsonObj);
-                }
+                collector.collect(jsonObj);
             }
         });
         return topicDbDS;
