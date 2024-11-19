@@ -30,6 +30,11 @@ public abstract class BaseApp {
             throw new RuntimeException("创建Flink环境失败");
         }
 
+        if(parallelism <= 0){
+            log.error("Flink程序并行度必须大于0");
+            throw new RuntimeException("创建Flink环境失败");
+        }
+
         if(StringUtils.isEmpty(ckAndGroupId) || StringUtils.isEmpty(brokerServers) || StringUtils.isAllEmpty(topics)){
             log.error("创建Flink启动环境时，ckAndGroupId：{}，Kafka brokerServers ：{}，topics:{}可能为空",ckAndGroupId,brokerServers, Arrays.toString(topics));
             throw new RuntimeException("创建Flink环境失败");

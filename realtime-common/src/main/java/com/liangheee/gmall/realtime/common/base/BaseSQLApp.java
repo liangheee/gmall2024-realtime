@@ -20,9 +20,14 @@ import java.util.Arrays;
  */
 @Slf4j
 public abstract class BaseSQLApp {
-    public void start(String port,String ck){
+    public void start(String port,int parallelism,String ck){
         if(Integer.parseInt(port) < 0 || Integer.parseInt(port) > 65535){
             log.error("创建Flink启动环境时，Flink WebUI的端口号：{}，超出合理范围0~65535",port);
+            throw new RuntimeException("创建Flink环境失败");
+        }
+
+        if(parallelism <= 0){
+            log.error("Flink程序并行度必须大于0");
             throw new RuntimeException("创建Flink环境失败");
         }
 
@@ -34,7 +39,7 @@ public abstract class BaseSQLApp {
         // 创建流执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         // 设置并行度
-        env.setParallelism(4);
+        env.setParallelism(parallelism);
         // 创建表执行环境
         StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
 
@@ -46,7 +51,7 @@ public abstract class BaseSQLApp {
         env.setRestartStrategy(RestartStrategies.failureRateRestart(3, Time.days(30),Time.seconds(3)));
         env.getCheckpointConfig().setCheckpointStorage("hdfs://mycluster:8020/gmall2024-realtime/ck/" + ck);
         env.setStateBackend(new HashMapStateBackend());
-        System.setProperty("HADOOP_USER_NAME","liangheee");
+        System.setProperty("HADOOP_USER_NAME",Constant.HADOOP_USER_NAME);
 
         handle(tableEnv);
     }

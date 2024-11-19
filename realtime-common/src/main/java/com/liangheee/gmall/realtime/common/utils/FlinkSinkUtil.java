@@ -1,9 +1,12 @@
 package com.liangheee.gmall.realtime.common.utils;
 
+import com.alibaba.fastjson.JSONObject;
+import com.liangheee.gmall.realtime.common.bean.TableProcessDwd;
 import com.liangheee.gmall.realtime.common.constant.Constant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
@@ -37,7 +40,29 @@ public class FlinkSinkUtil {
                     // 开启事务，默认为NONE不开启事务
                     .setDeliveryGuarantee(DeliveryGuarantee.EXACTLY_ONCE)
                     // 设置事务id前缀
-                    .setTransactionalIdPrefix(topic);
+                    .setTransactionalIdPrefix(transactionId[0]);
+        }
+
+        return kafkaSinkBuilder.build();
+    }
+
+    public static <T> KafkaSink<T> getKafkaSink(String brokerServers,KafkaRecordSerializationSchema<T> kafkaRecordSerializationSchema,String... transactionId) {
+        if (StringUtils.isEmpty(brokerServers)) {
+            log.error("获取KafkaSink时，brokerServers：{}不能为空", brokerServers);
+            throw new RuntimeException("获取KafkaSink失败");
+        }
+
+        KafkaSinkBuilder<T> kafkaSinkBuilder = KafkaSink.<T>builder()
+                .setBootstrapServers(brokerServers)
+                .setRecordSerializer(kafkaRecordSerializationSchema);
+
+        if(!StringUtils.isAllEmpty(transactionId)){
+            // 开启事务超时时间，大于检查点间隔超时时间，小于等于15分钟.
+            kafkaSinkBuilder .setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG,15 * 60 * 1000 + "")
+                    // 开启事务，默认为NONE不开启事务
+                    .setDeliveryGuarantee(DeliveryGuarantee.EXACTLY_ONCE)
+                    // 设置事务id前缀
+                    .setTransactionalIdPrefix(transactionId[0]);
         }
 
         return kafkaSinkBuilder.build();

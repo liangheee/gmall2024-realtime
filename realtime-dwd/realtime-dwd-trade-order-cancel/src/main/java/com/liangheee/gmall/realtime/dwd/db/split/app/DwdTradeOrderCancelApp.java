@@ -1,4 +1,4 @@
-package com.liangheee.gmall.realtime.dwd.db.app;
+package com.liangheee.gmall.realtime.dwd.db.split.app;
 
 import com.liangheee.gmall.realtime.common.base.BaseSQLApp;
 import com.liangheee.gmall.realtime.common.constant.Constant;
@@ -14,7 +14,7 @@ import java.time.Duration;
  */
 public class DwdTradeOrderCancelApp extends BaseSQLApp {
     public static void main(String[] args) {
-        new DwdTradeOrderCancelApp().start("10015",Constant.TOPIC_DWD_TRADE_ORDER_CANCEL);
+        new DwdTradeOrderCancelApp().start("10015",4,Constant.TOPIC_DWD_TRADE_ORDER_CANCEL);
     }
 
     @Override

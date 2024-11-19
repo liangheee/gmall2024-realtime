@@ -1,4 +1,4 @@
-package com.liangheee.gmall.realtime.dwd.db.app;
+package com.liangheee.gmall.realtime.dwd.db.split.app;
 
 import com.liangheee.gmall.realtime.common.base.BaseSQLApp;
 import com.liangheee.gmall.realtime.common.constant.Constant;
@@ -13,7 +13,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 public class DwdTradeCartAddApp extends BaseSQLApp {
 
     public static void main(String[] args) {
-        new DwdTradeCartAddApp().start("10013",Constant.TOPIC_DWD_TRADE_CART_ADD);
+        new DwdTradeCartAddApp().start("10013",4,Constant.TOPIC_DWD_TRADE_CART_ADD);
     }
 
     @Override

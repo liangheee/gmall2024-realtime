@@ -1,4 +1,4 @@
-package com.liangheee.gmall.realtime.dwd.db.app;
+package com.liangheee.gmall.realtime.dwd.db.split.app;
 
 import com.liangheee.gmall.realtime.common.base.BaseSQLApp;
 import com.liangheee.gmall.realtime.common.constant.Constant;
@@ -14,7 +14,7 @@ import java.time.Duration;
  */
 public class DwdTradeOrderDetailApp extends BaseSQLApp {
     public static void main(String[] args) {
-        new DwdTradeOrderDetailApp().start("10014",Constant.TOPIC_DWD_TRADE_ORDER_DETAIL);
+        new DwdTradeOrderDetailApp().start("10014",4,Constant.TOPIC_DWD_TRADE_ORDER_DETAIL);
     }
     @Override
     protected void handle(StreamTableEnvironment tableEnv) {
