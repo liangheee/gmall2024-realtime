@@ -1,7 +1,5 @@
 package com.liangheee.gmall.realtime.common.utils;
 
-import com.liangheee.gmall.realtime.common.constant.Constant;
-
 /**
  * @author liangheee
  * * @date 2024/11/11

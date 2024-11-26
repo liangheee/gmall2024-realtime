@@ -10,6 +10,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -66,6 +67,7 @@ public class FlinkSourceUtil {
                         return Types.STRING;
                     }
                 })
+                .setProperty(ConsumerConfig.ISOLATION_LEVEL_CONFIG,"read_committed")
                 .build();
         return kafkaSource;
     }

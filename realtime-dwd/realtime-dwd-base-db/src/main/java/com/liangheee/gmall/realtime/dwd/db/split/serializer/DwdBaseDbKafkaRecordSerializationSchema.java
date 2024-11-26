@@ -20,10 +20,7 @@ public class DwdBaseDbKafkaRecordSerializationSchema implements KafkaRecordSeria
     public ProducerRecord<byte[], byte[]> serialize(Tuple2<JSONObject, TableProcessDwd> element, KafkaSinkContext context, Long timestamp) {
         JSONObject jsonObj = element.f0;
         TableProcessDwd tableProcessDwd = element.f1;
-        JSONObject dataJsonObj = jsonObj.getJSONObject("data");
         String sinkTable = tableProcessDwd.getSinkTable();
-        String sinkColumns = tableProcessDwd.getSinkColumns();
-        JsonUtil.deleteNotNeedColumns(dataJsonObj, sinkColumns);
-        return new ProducerRecord<>(sinkTable, Bytes.toBytes(dataJsonObj.toJSONString()));
+        return new ProducerRecord<>(sinkTable, Bytes.toBytes(jsonObj.toJSONString()));
     }
 }

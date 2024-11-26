@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.liangheee.gmall.realtime.common.bean.TableProcessDwd;
 import com.liangheee.gmall.realtime.common.constant.Constant;
 import com.liangheee.gmall.realtime.common.utils.JdbcUtil;
+import com.liangheee.gmall.realtime.common.utils.JsonUtil;
 import com.liangheee.gmall.realtime.dwd.db.split.util.KeyUtil;
 import com.mysql.cj.jdbc.Driver;
 import org.apache.flink.api.common.state.BroadcastState;
@@ -52,7 +53,13 @@ public class DwdConfigBroadcastProcessFunction extends BroadcastProcessFunction<
         String key = KeyUtil.generateKey(table, type);
         TableProcessDwd tableProcessDwd;
         if ((tableProcessDwd = broadcastState.get(key)) != null || (tableProcessDwd = dwdConfigCache.get(key)) != null) {
-            collector.collect(Tuple2.of(jsonObj, tableProcessDwd));
+            JSONObject dataJsonObj = jsonObj.getJSONObject("data");
+            String sinkColumns = tableProcessDwd.getSinkColumns();
+            JsonUtil.deleteNotNeedColumns(dataJsonObj,sinkColumns);
+            // 补充ts时间字段
+            Long ts = jsonObj.getLong("ts");
+            dataJsonObj.put("ts",ts);
+            collector.collect(Tuple2.of(dataJsonObj, tableProcessDwd));
         }
     }
 
