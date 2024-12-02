@@ -25,6 +25,7 @@ public class Constant {
     public static final String TOPIC_DWD_TOOL_COUPON_USE = "dwd_tool_coupon_use";
     public static final String TOPIC_DWD_INTERACTION_FAVOR_ADD = "dwd_interaction_favor_add";
     public static final String TOPIC_DWD_USER_REGISTER = "dwd_user_register";
+    public static final String DORIS_DWS_TRAFFIC_SEARCH_KEYWORD_PAGE_VIEW_WINDOW = "dws_traffic_search_keyword_page_view_window";
     public static final String BROKER_SERVERS = "hadoop102:9092,hadoop103:9092,hadoop104:9092";
     public static final String ZOOKEEPER_QUORUM = "hadoop102,hadoop103,hadoop104:2181";
     public static final String MYSQL_HOST = "hadoop102";
@@ -34,4 +35,8 @@ public class Constant {
     public static final String MYSQL_URL = "jdbc:mysql://hadoop102:3306?useSSL=false";
     public static final String HBASE_HOST = "hadoop102,hadoop103,hadoop104";
     public static final String HBASE_NAMESPACE = "gmall2024";
+    public static final String DORIS_FE_NODES = "hadoop102:7030";
+    public static final String DORIS_PASSWD = "aaaaaa";
+    public static final String DORIS_USER = "root";
+    public static final String DORIS_DATABASE = "gmall2024_realtime";
 }

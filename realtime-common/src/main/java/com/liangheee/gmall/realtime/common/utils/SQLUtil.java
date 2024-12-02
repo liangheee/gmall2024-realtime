@@ -1,5 +1,7 @@
 package com.liangheee.gmall.realtime.common.utils;
 
+import com.liangheee.gmall.realtime.common.constant.Constant;
+
 /**
  * @author liangheee
  * * @date 2024/11/11
@@ -41,6 +43,22 @@ public class SQLUtil {
                 "  'key.format' = 'json',\n" +
                 "  'value.format' = 'json'\n" +
                 ");";
+        return params;
+    }
+
+    public static String getDorisSinkConnectorParams(String feNodes,String user,String password,String database,String table){
+        String params = "with(" +
+                " 'connector' = 'doris'," +
+                " 'fenodes' = '" + feNodes + "'," +
+                "  'table.identifier' = '" + database + "." + table + "'," +
+                "  'username' = '" + user + "'," +
+                "  'password' = '" + password + "', " +
+                "  'sink.properties.format' = 'json', " +
+                "  'sink.buffer-count' = '4', " +
+                "  'sink.buffer-size' = '4086'," +
+                "  'sink.enable-2pc' = 'false', " + // 测试阶段可以关闭两阶段提交,方便测试
+                "  'sink.properties.read_json_by_line' = 'true' " +
+                ")";
         return params;
     }
 
