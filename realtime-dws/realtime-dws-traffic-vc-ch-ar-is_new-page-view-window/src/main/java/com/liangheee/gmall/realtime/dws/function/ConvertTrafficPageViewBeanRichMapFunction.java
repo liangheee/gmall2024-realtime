@@ -38,7 +38,7 @@ public class ConvertTrafficPageViewBeanRichMapFunction extends RichMapFunction<J
 
         String curDate = DateFormatUtil.tsToDate(ts);
         Long uvCt = 0L;
-        if (StringUtils.isEmpty(accessDateValueState.value()) || accessDateValueState.value().equals(curDate)) {
+        if (StringUtils.isEmpty(accessDateValueState.value()) || !accessDateValueState.value().equals(curDate)) {
             uvCt = 1L;
             accessDateValueState.update(curDate);
         }
