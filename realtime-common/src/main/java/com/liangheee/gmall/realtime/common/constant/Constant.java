@@ -27,6 +27,7 @@ public class Constant {
     public static final String TOPIC_DWD_USER_REGISTER = "dwd_user_register";
     public static final String DORIS_DWS_TRAFFIC_SEARCH_KEYWORD_PAGE_VIEW_WINDOW = "dws_traffic_search_keyword_page_view_window";
     public static final String DORIS_DWS_TRAFFIC_VC_CH_AR_IS_NEW_PAGE_VIEW_WINDOW = "dws_traffic_vc_ch_ar_is_new_page_view_window";
+    public static final String DORIS_DWS_TRAFFIC_HOME_DETAIL_PAGE_VIEW_WINDOW = "dws_traffic_home_detail_page_view_window";
     public static final String BROKER_SERVERS = "hadoop102:9092,hadoop103:9092,hadoop104:9092";
     public static final String ZOOKEEPER_QUORUM = "hadoop102,hadoop103,hadoop104:2181";
     public static final String MYSQL_HOST = "hadoop102";

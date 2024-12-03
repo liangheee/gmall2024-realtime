@@ -14,6 +14,7 @@
     <modules>
         <module>realtime-dws-traffic-search-keyword-page-view-window</module>
         <module>realtime-dws-traffic-vc-ch-ar-is_new-page-view-window</module>
+        <module>realtime-dws-traffic-home-detail-page-view-window</module>
     </modules>
 
     <dependencies>
