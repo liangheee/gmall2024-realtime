@@ -26,7 +26,8 @@ public class DwdTradeCartAddApp extends BaseSQLApp {
                 "  `data`['id'] as id,\n" +
                 "  `data`['user_id'] as user_id,\n" +
                 "  `data`['sku_id'] as sku_id,\n" +
-                "  if(`old` is null,cast(`data`['sku_num'] as INTEGER), cast(`data`['sku_num'] as INTEGER) - cast(`old`['sku_num'] as INTEGER)) as sku_num\n" +
+                "  if(`old` is null,cast(`data`['sku_num'] as INTEGER), cast(`data`['sku_num'] as INTEGER) - cast(`old`['sku_num'] as INTEGER)) as sku_num,\n" +
+                "  `ts`\n" +
                 "from topic_db\n" +
                 "where `database` = 'gmall2024' \n" +
                 "and `table` = 'cart_info' \n" +
@@ -39,6 +40,7 @@ public class DwdTradeCartAddApp extends BaseSQLApp {
                 "  user_id STRING,\n" +
                 "  sku_id STRING,\n" +
                 "  sku_num BIGINT,\n" +
+                "  ts BIGINT,\n" +
                 "  PRIMARY KEY (id) NOT ENFORCED\n" +
                 ")" + SQLUtil.getUpsertKafkaSinkConnectorParams(Constant.TOPIC_DWD_TRADE_CART_ADD,Constant.BROKER_SERVERS));
 
