@@ -32,6 +32,7 @@ public class Constant {
     public static final String DORIS_DWS_USER_USER_LOGIN_WINDOW = "dws_user_user_login_window";
     public static final String DORIS_DWS_TRADE_CART_ADD_UU_WINDOW = "dws_trade_cart_add_uu_window";
     public static final String DORIS_DWS_TRADE_PAYMENT_SUC_WINDOW = "dws_trade_payment_suc_window";
+    public static final String DORIS_DWS_TRADE_ORDER_WINDOW = "dws_trade_order_window";
     public static final String BROKER_SERVERS = "hadoop102:9092,hadoop103:9092,hadoop104:9092";
     public static final String ZOOKEEPER_QUORUM = "hadoop102,hadoop103,hadoop104:2181";
     public static final String MYSQL_HOST = "hadoop102";

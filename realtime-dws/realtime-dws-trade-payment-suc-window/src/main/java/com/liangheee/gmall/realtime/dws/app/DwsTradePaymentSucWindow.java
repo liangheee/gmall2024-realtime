@@ -126,7 +126,7 @@ public class DwsTradePaymentSucWindow extends BaseApp {
                 TimeWindow window = context.window();
                 String stt = DateFormatUtil.tsToDateTime(window.getStart());
                 String edt = DateFormatUtil.tsToDateTime(window.getEnd());
-                String curDate = DateFormatUtil.tsToDateTime(window.getStart());
+                String curDate = DateFormatUtil.tsToDate(window.getStart());
                 tradePaymentBean.setStt(stt);
                 tradePaymentBean.setEdt(edt);
                 tradePaymentBean.setCurDate(curDate);
