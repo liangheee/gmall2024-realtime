@@ -7,6 +7,7 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
 import java.time.Duration;
+import java.time.ZoneId;
 
 /**
  * @author liangheee
@@ -22,6 +23,8 @@ public class DwdTradeOrderDetailApp extends BaseSQLApp {
         tableEnv.getConfig().setIdleStateRetention(Duration.ofSeconds(30));
 
         readTopicDb(tableEnv,Constant.TOPIC_DWD_TRADE_ORDER_DETAIL);
+
+        tableEnv.getConfig().setLocalTimeZone(ZoneId.of("GMT-08:00"));
 
         // 下单影响业务数据库的表：order_detail、order_info、order_detail_activity、order_detail_coupon
         // 过滤order_detail
@@ -100,7 +103,12 @@ public class DwdTradeOrderDetailApp extends BaseSQLApp {
                         "od.split_activity_amount," +
                         "od.split_coupon_amount," +
                         "od.split_total_amount," +
-                        "od.ts " +
+                        "od.ts," +
+                        // 测试时间戳生成方案
+                        "CURRENT_TIMESTAMP as ct," +
+                        "UNIX_TIMESTAMP(CAST(CURRENT_TIMESTAMP AS String),'yyyy-MM-dd HH:mm:ss.SSS') as uct," +
+                        "PROCTIME() as pt," +
+                        "UNIX_TIMESTAMP() as ut " +
                         "from order_detail od " +
                         "join order_info oi on od.order_id=oi.id " +
                         "left join order_detail_activity act " +
@@ -108,6 +116,10 @@ public class DwdTradeOrderDetailApp extends BaseSQLApp {
                         "left join order_detail_coupon cou " +
                         "on od.id=cou.order_detail_id ");
 
+        /*
+        TODO TIMESTAMP_LZT类型数据或TIMESTAMP类型数据往kafka写转换JSON数据时，会存在时区问题
+            解决方案：在写入Kafka之前，通过CAST函数提前将这两种类型数据转化为STRING，以STRING的格式再通过JSON序列化即可
+         */
         tableEnv.executeSql(
                 "create table " + Constant.TOPIC_DWD_TRADE_ORDER_DETAIL + "(" +
                         "id string," +
@@ -127,6 +139,10 @@ public class DwdTradeOrderDetailApp extends BaseSQLApp {
                         "split_coupon_amount string," +
                         "split_total_amount string," +
                         "ts bigint," +
+                        "ct TIMESTAMP_LTZ(3)," +
+                        "uct bigint," +
+                        "pt TIMESTAMP_LTZ," +
+                        "ut bigint," +
                         "primary key(id) not enforced " +
                         ")" + SQLUtil.getUpsertKafkaSinkConnectorParams(Constant.TOPIC_DWD_TRADE_ORDER_DETAIL,Constant.BROKER_SERVERS));
 

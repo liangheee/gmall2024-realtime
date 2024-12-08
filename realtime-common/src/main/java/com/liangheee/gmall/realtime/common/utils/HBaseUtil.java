@@ -1,18 +1,24 @@
 package com.liangheee.gmall.realtime.common.utils;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.CaseFormat;
 import com.liangheee.gmall.realtime.common.constant.Constant;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 /**
  * 操作HBase的工具类
@@ -27,12 +33,16 @@ public class HBaseUtil {
      * @return HBase连接
      * @throws IOException
      */
-    public static Connection getHBaseConnection() throws IOException {
-        Configuration conf = new Configuration();
-        conf.set("hbase.zookeeper.quorum", Constant.HBASE_HOST);
-        Connection conn = ConnectionFactory.createConnection(conf);
-        log.info("获取HBase连接成功");
-        return conn;
+    public static Connection getHBaseConnection() {
+        try {
+            Configuration conf = new Configuration();
+            conf.set("hbase.zookeeper.quorum", Constant.HBASE_HOST);
+            Connection conn = ConnectionFactory.createConnection(conf);
+            log.info("获取HBase连接成功");
+            return conn;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -40,10 +50,38 @@ public class HBaseUtil {
      * @param conn HBase连接
      * @throws IOException
      */
-    public static void closeHBaseConnection(Connection conn) throws IOException {
+    public static void closeHBaseConnection(Connection conn) {
         if(conn != null && !conn.isClosed()){
-            conn.close();
-            log.info("关闭HBase连接成功");
+            try {
+                conn.close();
+                log.info("关闭HBase连接成功");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+
+    public static AsyncConnection getAsyncHBaseConnection(){
+        try {
+            Configuration conf = new Configuration();
+            conf.set("hbase.zookeeper.quorum", Constant.HBASE_HOST);
+            AsyncConnection asyncConnection = ConnectionFactory.createAsyncConnection(conf).get();
+            log.info("获取HBase异步连接成功");
+            return asyncConnection;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void closeAsyncHBaseConnection(AsyncConnection asyncConnection){
+        if(asyncConnection != null && !asyncConnection.isClosed()){
+            try {
+                asyncConnection.close();
+                log.info("关闭HBase异步连接成功");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -157,6 +195,76 @@ public class HBaseUtil {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 根据RowKey获取数据行
+     * @param conn HBase连接
+     * @param namespace 名称空间
+     * @param table 表明
+     * @param rowKey 主键
+     * @param clz 输出结果类型
+     * @param convertToCamel 是否转换为小驼峰命名
+     * @return 返回封装结果
+     * @param <T> 返回封装结果类型
+     */
+    public static <T> T getRow(Connection conn, String namespace, String table, String rowKey, Class<T> clz, boolean convertToCamel){
+        TableName tableName = TableName.valueOf(namespace, table);
+        try(Table connTable = conn.getTable(tableName)){
+            Get get = new Get(Bytes.toBytes(rowKey));
+            Result result = connTable.get(get);
+
+            if(result.isEmpty()){
+                return null;
+            }
+
+            T obj = clz.newInstance();
+            for (Cell cell : result.listCells()) {
+                String columnName = Bytes.toString(CellUtil.cloneQualifier(cell));
+                String columnValue = Bytes.toString(CellUtil.cloneValue(cell));
+                if(convertToCamel){
+                    columnName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL,columnName);
+                }
+                BeanUtils.setProperty(obj,columnName,columnValue);
+            }
+            return obj;
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public static <T> T getRowAsync(AsyncConnection conn, String namespace, String table, String rowKey, Class<T> clz, boolean convertToCamel){
+        TableName tableName = TableName.valueOf(namespace, table);
+        AsyncTable<AdvancedScanResultConsumer> asyncTable = conn.getTable(tableName);
+        Get get = new Get(Bytes.toBytes(rowKey));
+        try {
+            Result result = asyncTable.get(get).get();
+
+            if(result.isEmpty()){
+                return null;
+            }
+
+            T obj = clz.newInstance();
+            for (Cell cell : result.listCells()) {
+                String columnName = Bytes.toString(CellUtil.cloneQualifier(cell));
+                String columnValue = Bytes.toString(CellUtil.cloneValue(cell));
+                if(convertToCamel){
+                    columnName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL,columnName);
+                }
+                BeanUtils.setProperty(obj,columnName,columnValue);
+            }
+            return obj;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        Connection conn = getHBaseConnection();
+        JSONObject jsonObj = getRow(conn, Constant.HBASE_NAMESPACE, "dim_sku_info", "9", JSONObject.class, false);
+        System.out.println(jsonObj);
+        closeHBaseConnection(conn);
     }
 
 }
