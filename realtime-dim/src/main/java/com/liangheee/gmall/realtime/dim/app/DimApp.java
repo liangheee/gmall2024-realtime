@@ -8,7 +8,7 @@ import com.liangheee.gmall.realtime.common.constant.Constant;
 import com.liangheee.gmall.realtime.common.utils.FlinkSourceUtil;
 import com.liangheee.gmall.realtime.dim.function.DimConfigBroadcastProcessFunction;
 import com.liangheee.gmall.realtime.dim.function.DimConfigRichMapFunction;
-import com.liangheee.gmall.realtime.dim.function.DimConfigRichSinkFunction;
+import com.liangheee.gmall.realtime.dim.function.DimSinkFunction;
 import com.liangheee.gmall.realtime.dim.function.topicDbFilterFunction;
 import com.ververica.cdc.connectors.mysql.source.MySqlSource;
 import lombok.extern.slf4j.Slf4j;
@@ -74,6 +74,6 @@ public class DimApp extends BaseApp {
         // ({"spu_name":"小米12sultra1111","tm_id":1,"description":"小米10","id":1,"type":"update","category3_id":61},TableProcessDim(sourceTable=spu_info, sinkTable=dim_spu_info, sinkColumns=id,spu_name,description,category3_id,tm_id, sinkFamily=info, sinkRowKey=id, op=r))
 //         dimBizDS.print();
 
-        dimBizDS.addSink(new DimConfigRichSinkFunction());
+        dimBizDS.addSink(new DimSinkFunction());
     }
 }

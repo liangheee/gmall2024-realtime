@@ -74,6 +74,11 @@ public class RedisUtil {
         conn.setex(generateKey(dimTable, id),24 * 60 * 60,dimJsonObj.toJSONString());
     }
 
+    public static void delDim(Jedis conn,String dimTable,String id){
+        log.info("删除redis中缓存维度数据");
+        conn.del(generateKey(dimTable,id));
+    }
+
     public static JSONObject getDimAsync(StatefulRedisConnection<String,String> conn,String dimTable,String id){
         log.info("从redis中异步获取缓存数据");
         RedisAsyncCommands<String, String> redisAsyncCommands = conn.async();
