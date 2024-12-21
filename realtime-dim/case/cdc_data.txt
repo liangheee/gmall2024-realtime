@@ -1,0 +1,61 @@
+--------------------------------------Flink-CDC---------------------------------------
+{
+  "before": null,
+  "after": {
+    "source_table": "base_category1",
+    "sink_table": "dim_base_category1",
+    "sink_family": "info",
+    "sink_columns": "id,name",
+    "sink_row_key": "id"
+  },
+  "source": {
+    "version": "1.9.7.Final",
+    "connector": "mysql",
+    "name": "mysql_binlog_source",
+    "ts_ms": 0,
+    "snapshot": "false",
+    "db": "gmall2024_config",
+    "sequence": null,
+    "table": "table_process_dim",
+    "server_id": 0,
+    "gtid": null,
+    "file": "",
+    "pos": 0,
+    "row": 0,
+    "thread": null,
+    "query": null
+  },
+  "op": "r",
+  "ts_ms": 1730102832300,
+  "transaction": null
+}
+-----------------------------------Maxwell--------------------------------------------
+{
+  "database": "gmall2024",
+  "xid": 29508,
+  "data": {
+    "payment_way": "3501",
+    "refundable_time": "2024-10-27 17:31:18",
+    "original_total_amount": 24795.00,
+    "order_status": "1006",
+    "consignee_tel": "13889387431",
+    "trade_body": "联想（Lenovo） 拯救者Y9000P 2022 16英寸游戏笔记本电脑 i9-12900H RTX3060 钛晶灰等3件商品",
+    "id": 935,
+    "operate_time": "2024-10-20 17:31:19",
+    "consignee": "黄振壮",
+    "create_time": "2024-10-20 17:31:18",
+    "coupon_reduce_amount": 0.00,
+    "out_trade_no": "986759258355639",
+    "total_amount": 24125.10,
+    "user_id": 21,
+    "province_id": 33,
+    "activity_reduce_amount": 669.90
+  },
+  "old": {
+    "order_status": "1005"
+  },
+  "commit": true,
+  "type": "update",
+  "table": "order_info",
+  "ts": 1730107879
+}

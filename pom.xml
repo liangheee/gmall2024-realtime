@@ -13,6 +13,7 @@
         <module>realtime-dwd</module>
         <module>realtime-dws</module>
         <module>realtime-common</module>
+        <module>realtime-dwd/realtime-dwd-interaction-comment-info</module>
     </modules>
 
     <properties>

@@ -1,0 +1,211 @@
+-------------------------------------启动日志-----------------------------------
+{
+  "common": {
+    "ar": "31",
+    "ba": "vivo",
+    "ch": "oppo",
+    "is_new": "1",
+    "md": "vivo IQOO Z6x ",
+    "mid": "mid_146",
+    "os": "Android 13.0",
+    "sid": "4289dd73-0d41-4511-a3c6-ca0a5cf6118c",
+    "uid": "172",
+    "vc": "v2.1.134"
+  },
+  "start": {
+    "entry": "install",
+    "loading_time": 19718,
+    "open_ad_id": 6,
+    "open_ad_ms": 9825,
+    "open_ad_skip_ms": 0
+  },
+  "ts": 1729416659000
+}
+
+-----------------------------页面日志 | 行动日志 | 曝光日志----------------------------
+
+{
+  "actions": [
+    {
+      "action_id": "get_coupon",
+      "item": "1",
+      "item_type": "coupon_id",
+      "ts": 1729416659000
+    },
+    {
+      "action_id": "get_coupon",
+      "item": "2",
+      "item_type": "coupon_id",
+      "ts": 1729416659000
+    },
+    {
+      "action_id": "get_coupon",
+      "item": "1",
+      "item_type": "coupon_id",
+      "ts": 1729416659000
+    }
+  ],
+  "common": {
+    "ar": "16",
+    "ba": "iPhone",
+    "ch": "Appstore",
+    "is_new": "1",
+    "md": "iPhone 14",
+    "mid": "mid_471",
+    "os": "iOS 13.3.1",
+    "sid": "e0375313-bfbf-4758-924e-ee27d1e58b25",
+    "uid": "157",
+    "vc": "v2.1.134"
+  },
+  "displays": [
+    {
+      "item": "1",
+      "item_type": "activity_id",
+      "pos_id": 1,
+      "pos_seq": 1
+    },
+    {
+      "item": "2",
+      "item_type": "activity_id",
+      "pos_id": 1,
+      "pos_seq": 1
+    },
+    {
+      "item": "3",
+      "item_type": "activity_id",
+      "pos_id": 1,
+      "pos_seq": 1
+    },
+    {
+      "item": "4",
+      "item_type": "activity_id",
+      "pos_id": 1,
+      "pos_seq": 1
+    },
+    {
+      "item": "5",
+      "item_type": "sku_id",
+      "pos_id": 2,
+      "pos_seq": 0
+    },
+    {
+      "item": "10",
+      "item_type": "sku_id",
+      "pos_id": 2,
+      "pos_seq": 1
+    },
+    {
+      "item": "21",
+      "item_type": "sku_id",
+      "pos_id": 2,
+      "pos_seq": 2
+    },
+    {
+      "item": "19",
+      "item_type": "sku_id",
+      "pos_id": 2,
+      "pos_seq": 3
+    },
+    {
+      "item": "27",
+      "item_type": "sku_id",
+      "pos_id": 2,
+      "pos_seq": 4
+    },
+    {
+      "item": "10",
+      "item_type": "sku_id",
+      "pos_id": 2,
+      "pos_seq": 5
+    }
+  ],
+  "page": {
+    "during_time": 12008,
+    "page_id": "home",
+    "refer_id": "4"
+  },
+  "ts": 1729416659000
+}
+
+---------------------------------错误日志-------------------------------------
+
+{
+  "actions": [
+    {
+      "action_id": "favor_add",
+      "item": "23",
+      "item_type": "sku_id",
+      "ts": 1729416660000
+    },
+    {
+      "action_id": "cart_add",
+      "item": "23",
+      "item_type": "sku_id",
+      "ts": 1729416660000
+    }
+  ],
+  "common": {
+    "ar": "32",
+    "ba": "iPhone",
+    "ch": "Appstore",
+    "is_new": "0",
+    "md": "iPhone 14",
+    "mid": "mid_385",
+    "os": "iOS 12.4.1",
+    "sid": "0e40703a-402c-474e-9868-dd1094aeeb77",
+    "uid": "230",
+    "vc": "v2.1.134"
+  },
+  "displays": [
+    {
+      "item": "31",
+      "item_type": "sku_id",
+      "pos_id": 4,
+      "pos_seq": 0
+    },
+    {
+      "item": "32",
+      "item_type": "sku_id",
+      "pos_id": 4,
+      "pos_seq": 1
+    },
+    {
+      "item": "33",
+      "item_type": "sku_id",
+      "pos_id": 4,
+      "pos_seq": 2
+    },
+    {
+      "item": "26",
+      "item_type": "sku_id",
+      "pos_id": 4,
+      "pos_seq": 3
+    },
+    {
+      "item": "29",
+      "item_type": "sku_id",
+      "pos_id": 4,
+      "pos_seq": 4
+    },
+    {
+      "item": "27",
+      "item_type": "sku_id",
+      "pos_id": 4,
+      "pos_seq": 5
+    }
+  ],
+  "err": {
+    "error_code": 3603,
+    "msg": " Exception in thread \\  java.net.SocketTimeoutException\\n \\tat com.atgugu.gmall2020.mock.bean.AppError.main(AppError.java:xxxxxx)"
+  },
+  "page": {
+    "during_time": 14000,
+    "from_pos_id": 10,
+    "from_pos_seq": 3,
+    "item": "23",
+    "item_type": "sku_id",
+    "last_page_id": "good_list",
+    "page_id": "good_detail"
+  },
+  "ts": 1729416660000
+}

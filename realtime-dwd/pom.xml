@@ -10,6 +10,17 @@
     </parent>
 
     <artifactId>realtime-dwd</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>realtime-dwd-base-log</module>
+        <module>realtime-dwd-trade-cart-add</module>
+        <module>realtime-dwd-trade-order-detail</module>
+        <module>realtime-dwd-trade-order-cancel</module>
+        <module>realtime-dwd-trade-order-pay-suc-detail</module>
+        <module>realtime-dwd-trade-order-refund</module>
+        <module>realtime-dwd-trade-refund-pay-suc-detail</module>
+        <module>realtime-dwd-base-db</module>
+    </modules>
 
     <dependencies>
         <dependency>
